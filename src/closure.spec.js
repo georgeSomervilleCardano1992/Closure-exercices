@@ -1,22 +1,48 @@
-import { createFunction, createSecretHolder, callTimes, russianRoulette, makeFuncTester, makeHistory, blackJack, createFunctionPrinter, outer, once, rollCall, saveOutput, cycleIterator, defineFirstArg, dateStamp } from './closure';
+import sinon from 'sinon';
+import {
+  createFunction,
+  createSecretHolder,
+  callTimes,
+  russianRoulette,
+  makeFuncTester,
+  makeHistory,
+  blackJack,
+  createFunctionPrinter,
+  outer,
+  once,
+  rollCall,
+  saveOutput,
+  cycleIterator,
+  defineFirstArg,
+  dateStamp,
+  after,
+  addByX
+} from './closure';
 
 
 describe('Closure tests', () => {
-  test('Challenge One', () => {
+  let clock;
+  beforeAll(() => {
+    clock = sinon.useFakeTimers(new Date('2019-02-21'));
+  });
+  afterAll(() => {
+    clock.restore();
+  });
+  describe('Challenge 1', () => {
     const function1 = createFunction();
     expect(function1()).toBe('hello');
   })
 
-  /* Create a function createFunctionPrinter that accepts one input and returns a function.
-    When that created function is called,
-    it should print out the input that was used when the function was created.
-   */
-  test('Challenge Two', () => {
+  describe('Challenge 2', () => {
+    /* Create a function createFunctionPrinter that accepts one input and returns a function.
+      When that created function is called,
+      it should print out the input that was used when the function was created.
+     */
     const printSample = createFunctionPrinter('sample');
     expect(printSample()).toBe('sample')
   })
 
-  test('Challenge 3', () => {
+  describe('Challenge 3', () => {
     const willCounter = outer();
     const jasCounter = outer();
     expect(willCounter()).toEqual(1);
@@ -26,18 +52,51 @@ describe('Closure tests', () => {
     expect(willCounter()).toEqual(4);
   });
 
-  test('Challenge 7, rollCaller', () => {
+  describe('Challenge 4 - Once', () => {
+    /* Write a function once that accepts a callback as input and returns a function.
+      When the returned function is called the first time, it should call the callback and return that output.
+      If it is called any additional times,
+      instead of calling the callback again it will simply return the output value from the first time it was called. */
+    const addByTwo = addByX(2);
+    const onceFunc = once(addByTwo);
+    // console.log(onceFunc(4));  // => should log 6
+    // console.log(onceFunc(10));  // => should log 6
+    it('expect function to be only be called once', () => {
+      expect(onceFunc(4)).toBe(6);
+      expect(onceFunc(10)).toBe(6);
+    });
+  });
+
+  describe('Challenge 5 - after', () => {
+    /* Write a function after that takes the number of times the callback needs to be called
+      before being executed as the first parameter and the callback as the second parameter.
+    */
+    const called = function() { return 'hello' };
+    const afterCalled = after(3, called);
+    // afterCalled(); // => nothing is printed
+    // afterCalled(); // => nothing is printed
+    // afterCalled(); // => 'hello' is printed
+    it('should return null when executime time is below the limit', () => {
+      expect(afterCalled()).toBe('');
+      expect(afterCalled()).toBe('');
+    });
+    it('should return the expected out put above when number of expected times has been reached', () => {
+      expect(afterCalled()).toBe('hello');
+    });
+  });
+
+  describe('Challenge 7, rollCaller', () => {
     /* Write a function rollCall that accepts an array of names and returns a function.
     The first time the returned function is invoked, it should log the first name to the console.
     The second time it is invoked, it should log the second name to the console, and so on, until all names have been called.
     Once all names have been called, it should log 'Everyone accounted for'.
      */
-    const rollCaller = rollCall(['Victoria', 'Juan', 'Ruth'])
-    expect(rollCaller()).toBe('Victoria') // => should log 'Victoria'
-    expect(rollCaller()).toBe('Juan') // => should log 'Juan'
-    expect(rollCaller()).toBe('Ruth') // => should log 'Ruth'
-    expect(rollCaller()).toBe('Everyone accounted for') // => should log 'Everyone accounted for'
-  })
+    const rollCaller = rollCall(['Victoria', 'Juan', 'Ruth']);
+    expect(rollCaller()).toBe('Victoria'); // => should log 'Victoria'
+    expect(rollCaller()).toBe('Juan'); // => should log 'Juan'
+    expect(rollCaller()).toBe('Ruth'); // => should log 'Ruth'
+    expect(rollCaller()).toBe('Everyone accounted for'); // => should log 'Everyone accounted for'
+  });
 
   describe('Challenge 8, saveOutput', () => {
     /* Create a function saveOutput that accepts a function (that will accept one argument), and a string (that will act as a password).
@@ -98,7 +157,7 @@ describe('Closure tests', () => {
     });
 
   });
-
+  /* Mock the date */
   describe('Challenge 11 - DateStamp', () => {
    /* Create a function dateStamp that accepts a function and returns a function.
       The returned function will accept however many arguments the passed-in function accepts,
@@ -108,11 +167,11 @@ describe('Closure tests', () => {
      */
     const stampedMultBy2 = dateStamp(n => n * 2);
     it('should log todays day and the output of the function', () => {
-      expect(stampedMultBy2(4)).toEqual({"date": "2020-04-17", "output": 8});
+      expect(stampedMultBy2(4)).toEqual({"date": "2019-02-21", "output": 8});
     })
 
     it('should log todays day and output of the function', () => {
-      expect(stampedMultBy2(6)).toEqual({"date": "2020-04-17", "output": 12});
+      expect(stampedMultBy2(6)).toEqual({"date": "2019-02-21", "output": 12});
     });
   });
 
@@ -132,44 +191,45 @@ describe('Closure tests', () => {
     })
   })
 
-  /*
-    Write a function, callTimes, that returns a new function.
-    The new function should return the number of times it’s been called.
-  */
-
-  // /*** Uncomment these to check your work! ***/
-  // let myNewFunc1 = callTimes();
-  // let myNewFunc2 = callTimes();
-  // myNewFunc1(); // => 1
-  // myNewFunc1(); // => 2
-  // myNewFunc2(); // => 1
-  // myNewFunc2(); // => 2
 
   describe('Challenge 15', () => {
+    /*
+      Write a function, callTimes, that returns a new function.
+      The new function should return the number of times it’s been called.
+    */
+
+    /* let myNewFunc1 = callTimes();
+       let myNewFunc2 = callTimes();
+       myNewFunc1(); // => 1
+       myNewFunc1(); // => 2
+       myNewFunc2(); // => 1
+       myNewFunc2(); // => 2
+    */
     let myNewFunc1 = callTimes();
     let myNewFunc2 = callTimes();
     test('myNewFunc1 should return 1', () => {
       expect(myNewFunc1()).toBe(1)
-    })
+    });
+
     test('myNewFunc1 should return 2', () => {
       expect(myNewFunc1()).toBe(2)
-    })
+    });
 
     test('myNewFunc2 should return 1', () => {
       expect(myNewFunc2()).toBe(1)
-    })
+    });
 
     test('myNewFunc2 should return 2', () => {
       expect(myNewFunc2()).toBe(2)
     })
-  })
+  });
+
+  describe('Challenge 16 russianRoulette', () => {
     /* Create a function russianRoulette that accepts a number (let us call it n), and returns a function.
       The returned function will take no arguments, and will return the string 'click' the first n - 1 number of times
       it is invoked. On the very next invocation (the nth invocation),
       the returned function will return the string 'bang'. On every invocation after that,
       the returned function returns the string 'reload to play again'. */
-
-  describe('Challenge 16 russianRoulette', () => {
     // const play = russianRoulette(3);
     // console.log(play()); // => should log 'click'
     // console.log(play()); // => should log 'click'
@@ -193,13 +253,12 @@ describe('Closure tests', () => {
     })
   })
 
-  /* Create a function makeFuncTester that accepts an array (of two-element sub-arrays), and
-    returns a function (that will accept a callback).
-    The returned function should return true if the first elements (of each sub-array)
-    being passed into the callback all yield the corresponding second elements (of the same sub-array).
-    Otherwise, the returned function should return false. */
-
   describe('Challenge 18 makeFuncTester', () => {
+    /* Create a function makeFuncTester that accepts an array (of two-element sub-arrays), and
+      returns a function (that will accept a callback).
+      The returned function should return true if the first elements (of each sub-array)
+      being passed into the callback all yield the corresponding second elements (of the same sub-array).
+      Otherwise, the returned function should return false. */
     // Incomplete
     const capLastTestCases = [];
     capLastTestCases.push(['hello', 'hellO']);
@@ -217,15 +276,15 @@ describe('Closure tests', () => {
     });
   });
 
-  /* Create a function makeHistory that accepts a number (which will serve as a limit), and returns a function (that will accept a string).
-   The returned function will save a history of the most recent "limit" number of strings passed into the returned function (one per invocation only).
-   Every time a string is passed into the function, the function should return that same string with the word 'done' after it (separated by a space).
-   However, if the string 'undo' is passed into the function, then the function should delete the last action saved in the history,
-   and return that delted string with the word 'undone' after (separated by a space).
-   If 'undo' is passed into the function and the function's history is empty, then the function should return the string 'nothing to undo'.
-
-   */
   describe('Challenge 19 makeHistory', () => {
+    /* Create a function makeHistory that accepts a number (which will serve as a limit), and returns a function (that will accept a string).
+     The returned function will save a history of the most recent "limit" number of strings passed into the returned function (one per invocation only).
+     Every time a string is passed into the function, the function should return that same string with the word 'done' after it (separated by a space).
+     However, if the string 'undo' is passed into the function, then the function should delete the last action saved in the history,
+     and return that delted string with the word 'undone' after (separated by a space).
+     If 'undo' is passed into the function and the function's history is empty, then the function should return the string 'nothing to undo'.
+
+     */
     const myActions = makeHistory(2);
     it('should return jump done', () => {
       expect(myActions('jump')).toEqual('jump done')

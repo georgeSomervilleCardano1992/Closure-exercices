@@ -93,17 +93,20 @@ function once(func) {
 //   return callCallback;
 // }
 
-// CHALLENGE 5
+// /*** Uncomment these to check your work! ***/
+// const addByTwo = addByX(2)
+
+// CHALLENGE 5;
 function after(count, func) {
 	let counter = 0
 
 	function callback () {
   	counter +=1
-    console.log('my counter', counter)
+
     if(counter === count) {
       return func();
     } else {
-      return function (){}
+      return ''
     }
   }
   return callback
@@ -371,4 +374,4 @@ function blackJack(array) {
   }
   return dealer;
 }
-export { createFunction, createSecretHolder, callTimes, russianRoulette, makeFuncTester, makeHistory, blackJack,  createFunctionPrinter, outer, once, rollCall, saveOutput, cycleIterator, defineFirstArg, dateStamp};
+export { createFunction, createSecretHolder, callTimes, russianRoulette, makeFuncTester, makeHistory, blackJack,  createFunctionPrinter, outer, once, rollCall, saveOutput, cycleIterator, defineFirstArg, dateStamp, after, addByX};
